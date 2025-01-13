@@ -21,8 +21,8 @@ public:
 	int getScore(char p); // x,o
 	void updateScore(char p); // x,o
 	void resetGame();
-	void setP1Name(string &x);
-	void setP2Name(string &x);
+	void setP1Name(string x);
+	void setP2Name(string x);
 	string getP1Name();
 	string getP2Name();
 };

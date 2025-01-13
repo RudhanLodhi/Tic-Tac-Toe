@@ -80,8 +80,8 @@ void TicTacToe::resetGame()
     }
 }
 
-void TicTacToe::setP1Name(string &x) { P1Name = x; }
-void TicTacToe::setP2Name(string &x) { P2name = x; }
+void TicTacToe::setP1Name(string x) { P1Name = x; }
+void TicTacToe::setP2Name(string x) { P2name = x; }
 
 string TicTacToe::getP1Name() { return P1Name;}
 string TicTacToe::getP2Name() { return P2name;}
