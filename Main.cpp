@@ -26,31 +26,28 @@ int main() {
     bool turn = rand() % 2;
 
     // Main game loop
-    // Main game loop
     while (window.isOpen()) {
         window.clear(Color::Black);
 
-        // Draw the game interface
         gui.DrawGrid(window);
         gui.MenuText(window, turn);
         gui.DrawScore(window);
 
-        // Handle user input for game moves
         vector<int> cords = gui.HandleInput(window);
         if (cords[0] != -1 && cords[1] != -1) {
             if (!turn) { // Player 1's turn
                 gui.getGame().input('x', cords[0], cords[1]);
-                    turn = true; // Switch turn
+                    turn = true;
             }
             else { // Player 2 or CPU's turn
                 if (mode == 1) { // Player vs Player
                     gui.getGame().input('o', cords[0], cords[1]);
-                        turn = false; // Switch turn
+                        turn = false;
                 }
-                else if (mode == 2) { // Player vs CPU
-                    gui.getGame().input('o', cords[0], cords[1]); // CPU move handling
-                    turn = false; // Switch turn back to Player 1
-                }
+                //else if (mode == 2) { // Player vs CPU
+                //    gui.getGame().input('o', cords[0], cords[1]); // CPU move handling
+                //    turn = false;
+                //}
             }
 
             // Redraw the updated grid and display the move
@@ -61,7 +58,6 @@ int main() {
             window.display();
         }
 
-        // Check for game end condition
         string resultMessage = gui.game_end();
         if (!resultMessage.empty()) {
             gui.showMessageBox(window, resultMessage);
