@@ -77,18 +77,17 @@ void Game_Gui::Clicksound() {
 	Sound sound;
 	sound.setBuffer(buffer);
 	sound.play();
-	sleep(milliseconds(150));
+	sleep(milliseconds(180));
 }
 
-void Game_Gui::showMessageBox(RenderWindow& window) {
-	int response = MessageBox(nullptr, L"Do you want to play again?", L"Game Over", MB_YESNO | MB_ICONQUESTION);
+void Game_Gui::showMessageBox(RenderWindow& window, string& resultMessage) {
+	std::wstring message = std::wstring(resultMessage.begin(), resultMessage.end()) + L"\nDo you want to play again?";
+	int response = MessageBox(nullptr, message.c_str(), L"Game Over", MB_YESNO | MB_ICONQUESTION);
 
 	if (response == IDYES) {
-		cout << "User chose to play again.\n";
 		game.resetGame();
 	}
 	else if (response == IDNO) {
-		cout << "User chose to exit the game.\n";
 		window.close();
 	}
 }
@@ -213,21 +212,295 @@ void Game_Gui::DrawScore(RenderWindow& window) {
 	window.draw(p2ScoreText);
 }
 
-bool Game_Gui::game_end()
-{
+string Game_Gui::game_end() {
 	if (game.getNo_X() >= 3 && game.check_Winner('x')) {
-		cout << "player 1 wins" << endl;
 		game.updateScore('x');
-		return true;
+		return game.getP1Name() + " wins!";
 	}
 	else if (game.getNo_O() >= 3 && game.check_Winner('o')) {
-		cout << "player 2 wins" << endl;
 		game.updateScore('o');
-		return true;
+		return game.getP2Name() + " wins!";
 	}
-	else if (game.getNo_X() == 5 || game.getNo_O() == 5) {
-		cout << "draw" << endl;
-		return true;
+	else if (game.getNo_X() + game.getNo_O() == 9) { 
+		return "It's a draw!";
 	}
-	return false;
+	return "";
+}
+
+
+void Game_Gui::DrawStartMenu(RenderWindow& window) {
+	Font font;
+	if (!font.loadFromFile("font.ttf")) {
+		cout << "Could not load font\n";
+		return;
+	}
+
+	Text titleText;
+	titleText.setFont(font);
+	titleText.setString("Tic Tac Toe");
+	titleText.setCharacterSize(50);
+	titleText.setFillColor(Color::White);
+	titleText.setPosition(250, 100);
+
+	Text pvpOption;
+	pvpOption.setFont(font);
+	pvpOption.setString("1. Player vs Player");
+	pvpOption.setCharacterSize(30);
+	pvpOption.setFillColor(Color::White);
+	pvpOption.setPosition(250, 250);
+
+	Text pvcOption;
+	pvcOption.setFont(font);
+	pvcOption.setString("2. Player vs CPU");
+	pvcOption.setCharacterSize(30);
+	pvcOption.setFillColor(Color::White);
+	pvcOption.setPosition(250, 300);
+
+	window.draw(titleText);
+	window.draw(pvpOption);
+	window.draw(pvcOption);
+}
+
+int Game_Gui::HandleStartMenuInput(RenderWindow& window) {
+	Event event;
+	while (window.pollEvent(event)) {
+		if (event.type == Event::Closed) {
+			window.close();
+		}
+		if (event.type == Event::KeyPressed) {
+			if (event.key.code == Keyboard::Num1) {
+				return 1; // Player vs Player
+			}
+			if (event.key.code == Keyboard::Num2) {
+				return 2; // Player vs CPU
+			}
+		}
+	}
+	return 0; 
+}
+
+vector<string> Game_Gui::GetPlayerNames(RenderWindow& window) {
+	Font font;
+	if (!font.loadFromFile("font.ttf")) {
+		cout << "Could not load font\n";
+		return {};
+	}
+
+	vector<string> playerNames = { "", "" };
+	string currentInput = "";
+	int currentPlayer = 0;
+
+	Text promptText;
+	promptText.setFont(font);
+	promptText.setCharacterSize(30);
+	promptText.setFillColor(Color::White);
+
+	Text inputText;
+	inputText.setFont(font);
+	inputText.setCharacterSize(30);
+	inputText.setFillColor(Color::Cyan);
+
+	while (currentPlayer < 2 && window.isOpen()) {
+		window.clear(Color::Black);
+
+		promptText.setString("Enter name for Player " + to_string(currentPlayer + 1) + ":");
+		promptText.setPosition(200, 200);
+		inputText.setString(currentInput);
+		inputText.setPosition(200, 300);
+
+		window.draw(promptText);
+		window.draw(inputText);
+		window.display();
+
+		Event event;
+		while (window.pollEvent(event)) {
+			if (event.type == Event::Closed) {
+				window.close();
+			}
+			if (event.type == Event::TextEntered) {
+				if (event.text.unicode < 128 && event.text.unicode != '\b') {
+					currentInput += static_cast<char>(event.text.unicode);
+				}
+			}
+			if (event.type == Event::KeyPressed) {
+				if (event.key.code == Keyboard::BackSpace && !currentInput.empty()) {
+					currentInput.pop_back();
+				}
+				if (event.key.code == Keyboard::Enter && !currentInput.empty()) {
+					playerNames[currentPlayer] = currentInput;
+					currentInput = "";
+					currentPlayer++;
+				}
+			}
+		}
+	}
+
+	return playerNames;
+}
+
+int Game_Gui::DisplayStartMenu(RenderWindow& window) {
+	Font font;
+	if (!font.loadFromFile("font.ttf")) {
+		cout << "Could not load font\n";
+		return -1;
+	}
+
+	Text title("Tic Tac Toe", font, 50);
+	title.setFillColor(Color::White);
+	title.setStyle(Text::Bold | Text::Underlined);
+	title.setPosition(200, 150);
+
+	RectangleShape pvpButton(Vector2f(300, 50));
+	pvpButton.setFillColor(Color(100, 100, 200));
+	pvpButton.setPosition(200, 300);
+
+	Text pvpText("Player vs Player", font, 25);
+	pvpText.setFillColor(Color::White);
+	pvpText.setPosition(240, 310);
+
+	RectangleShape cpuButton(Vector2f(300, 50));
+	cpuButton.setFillColor(Color(200, 100, 100));
+	cpuButton.setPosition(200, 400);
+
+	Text cpuText("Player vs CPU", font, 25);
+	cpuText.setFillColor(Color::White);
+	cpuText.setPosition(260, 410);
+
+	while (window.isOpen()) {
+		window.clear(Color::Black);
+
+		window.draw(title);
+		window.draw(pvpButton);
+		window.draw(pvpText);
+		window.draw(cpuButton);
+		window.draw(cpuText);
+
+		window.display();
+
+		Event event;
+		while (window.pollEvent(event)) {
+			if (event.type == Event::Closed) {
+				window.close();
+			}
+			if (event.type == Event::MouseButtonPressed && event.mouseButton.button == Mouse::Left) {
+				Vector2i mousePos = Mouse::getPosition(window);
+
+				if (pvpButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+					return 1; // Player vs Player
+				}
+				if (cpuButton.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+					return 2; // Player vs CPU
+				}
+			}
+		}
+	}
+	return -1; // Window closed
+}
+
+pair<string, string> Game_Gui::InputPlayerNames(RenderWindow& window, bool isPvP) {
+	Font font;
+	if (!font.loadFromFile("font.ttf")) {
+		cout << "Could not load font\n";
+		return { "Player 1", isPvP ? "Player 2" : "CPU" };
+	}
+
+	Text title("Enter Player Names", font, 40);
+	title.setFillColor(Color::White);
+	title.setPosition(180, 100);
+
+	string p1Name = "", p2Name = isPvP ? "" : "CPU"; 
+	Text inputText1("Player 1: ", font, 30);
+	inputText1.setFillColor(Color::White);
+	inputText1.setPosition(100, 250);
+
+	Text inputText2("Player 2: ", font, 30);
+	inputText2.setFillColor(Color::White);
+	inputText2.setPosition(100, 350);
+
+	RectangleShape textBox1(Vector2f(400, 50));
+	textBox1.setFillColor(Color(50, 50, 50));
+	textBox1.setPosition(250, 250);
+
+	RectangleShape textBox2(Vector2f(400, 50));
+	textBox2.setFillColor(Color(50, 50, 50));
+	textBox2.setPosition(250, 350);
+
+	bool isEditingP1 = true; 
+
+	while (window.isOpen()) {
+		window.clear(Color::Black);
+
+		// Draw elements
+		window.draw(title);
+		window.draw(inputText1);
+		window.draw(inputText2);
+		window.draw(textBox1);
+		window.draw(textBox2);
+
+		Text p1NameText(p1Name, font, 25);
+		p1NameText.setFillColor(isEditingP1 ? Color::Cyan : Color::White);
+		p1NameText.setPosition(260, 260);
+
+		Text p2NameText(p2Name, font, 25);
+		p2NameText.setFillColor(!isEditingP1 ? Color::Cyan : Color::White);
+		p2NameText.setPosition(260, 360);
+
+		window.draw(p1NameText);
+		window.draw(p2NameText);
+
+		window.display();
+
+		Event event;
+		while (window.pollEvent(event)) {
+			if (event.type == Event::Closed) {
+				window.close();
+			}
+
+			if (event.type == Event::TextEntered) {
+				char inputChar = static_cast<char>(event.text.unicode);
+
+				if (inputChar == '\b') { 
+					if (isEditingP1 && !p1Name.empty()) {
+						p1Name.pop_back();
+					}
+					else if (!isEditingP1 && !p2Name.empty() && isPvP) {
+						p2Name.pop_back();
+					}
+				}
+				else if (inputChar == '\r') {
+					if (isEditingP1) {
+						isEditingP1 = false; // Move to Player 2
+					}
+					else {
+						if (isPvP && !p1Name.empty() && !p2Name.empty()) {
+							return { p1Name, p2Name };
+						}
+						else if (!isPvP && !p1Name.empty()) {
+							return { p1Name, "CPU" };
+						}
+					}
+				}
+				else if (inputChar >= 32 && inputChar <= 126) { 
+					if (isEditingP1 && p1Name.size() < 15) {
+						p1Name += inputChar;
+					}
+					else if (!isEditingP1 && isPvP && p2Name.size() < 15) {
+						p2Name += inputChar;
+					}
+				}
+			}
+
+			if (event.type == Event::MouseButtonPressed && event.mouseButton.button == Mouse::Left) {
+				Vector2i mousePos = Mouse::getPosition(window);
+				if (textBox1.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
+					isEditingP1 = true;
+				}
+				else if (textBox2.getGlobalBounds().contains(mousePos.x, mousePos.y) && isPvP) {
+					isEditingP1 = false;
+				}
+			}
+		}
+	}
+
+	return { "Player 1", isPvP ? "Player 2" : "CPU" };
 }
