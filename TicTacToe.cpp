@@ -1,5 +1,4 @@
 #include "TicTacToe.h"
-#include <string>
 
 TicTacToe::TicTacToe() : P1Name("Player 1") , P2name("Player 2")
 {
@@ -8,21 +7,38 @@ TicTacToe::TicTacToe() : P1Name("Player 1") , P2name("Player 2")
     resetGame();
 }
 
-void TicTacToe::input(char p, int row, int col) // p = player (either x,o)
+bool TicTacToe::input(char p, int row, int col) // p = player (either x, o, or ' ')
 {
-	if (row >=3 || col >= 3 || row<0 || col<0 || map[row][col] == 'x' || map[row][col] == 'o') // possible error conditions
-	{
-		return;
-	}
-	if (p == 'x'){
-		map[row][col] = 'x';
+    if (row >= 3 || col >= 3 || row < 0 || col < 0) { // possible error inputs
+        return false;
+    }
+
+    if (p == ' ') { // for minimax reset
+        if (map[row][col] == 'x') {
+            no_x--;
+        }
+        else if (map[row][col] == 'o') {
+            no_o--; 
+        }
+        map[row][col] = ' ';
+        return true;
+    }
+
+    if (map[row][col] == 'x' || map[row][col] == 'o') { // already occupied
+        return false;
+    }
+
+    if (p == 'x') {
+        map[row][col] = 'x';
         no_x++;
-	}
-	else{
-		map[row][col] = 'o';
+    }
+    else if (p == 'o') {
+        map[row][col] = 'o';
         no_o++;
-	}
+    }
+    return true;
 }
+
 
 bool TicTacToe::check_Winner(char ch)
 {
@@ -48,20 +64,11 @@ bool TicTacToe::check_Winner(char ch)
     return false;
 }
 
-int TicTacToe::getNo_X()
-{
-    return no_x;
-}
+int TicTacToe::getNo_X(){ return no_x; }
 
-int TicTacToe::getNo_O()
-{
-    return no_o;
-}
+int TicTacToe::getNo_O() { return no_o;}
 
-char TicTacToe::getMap(int i , int j)
-{
-    return map[i][j];
-}
+char TicTacToe::getMap(int i , int j) { return map[i][j]; }
 
 int TicTacToe::getScore(char p) { return (p == 'x' ? score[0] : score[1]); }
 

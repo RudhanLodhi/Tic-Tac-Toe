@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#define TIC_TAC_TOE
 using namespace std;
 
 class TicTacToe
@@ -11,9 +10,10 @@ class TicTacToe
 	int score[2]; // [0] = p1
 	string P1Name;
 	string P2name;
+
 public:
 	TicTacToe();
-	void input(char p, int row, int col); // p is player (1 or 2)
+	bool input(char p, int row, int col); // p is player (1 or 2)
 	bool check_Winner(char ch); // ch is either x,o
 	int getNo_X();
 	int getNo_O();
